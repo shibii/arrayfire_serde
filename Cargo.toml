@@ -1,0 +1,16 @@
+[package]
+name = "arrayfire_serde"
+version = "0.1.0"
+authors = ["Seppo Kilpeläinen <seppo.kilpelainen@gmail.com>"]
+description = "Serde support for Arrayfire types."
+repository = "https://github.com/shibii/arrayfire_serde"
+documentation = "https://docs.rs/arrayfire_serde"
+readme = "README.md"
+keywords = ["serde", "arrayfire"]
+license = "MIT"
+
+[dependencies]
+arrayfire = "3.5.0"
+serde_derive = "1.0.18"
+serde = "1.0.18"
+serde_test = "1.0.18"
