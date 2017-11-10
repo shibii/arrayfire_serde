@@ -1,3 +1,34 @@
+//! `arrayfire_serde` provides `serde` serialization and deserialization support for `arrayfire` types.
+//!
+//! The implementation is still experimental and lacking in many aspects.
+//!
+//! As of now the supported types are:
+//!
+//! * `arrayfire::Array` (non-complex internal type)
+//! * `arrayfire::Dim4`
+//! * `arrayfire::DType`
+//!
+//! # Examples
+//!
+//! Using the `derive` generators with structures
+//! that contain `arrayfire` types as members.
+//!
+//! ```rust
+//! #[macro_use]
+//! extern crate serde_derive;
+//! extern crate serde;
+//! extern crate arrayfire;
+//! extern crate arrayfire_serde;
+//!
+//! #[derive(Serialize, Deserialize)]
+//! struct MyStruct {
+//!     #[serde(with = "arrayfire_serde")]
+//!     tensor: arrayfire::Array,
+//!     #[serde(with = "arrayfire_serde")]
+//!     sliding_window: arrayfire::Dim4,
+//! }
+//! # fn main() {}
+//! ```
 extern crate arrayfire;
 extern crate serde;
 
@@ -7,6 +38,25 @@ use serde::de::{SeqAccess, Visitor};
 use serde::ser::SerializeTuple;
 use std::fmt;
 
+/// Exposed serialization function used by the `serde` attributes:
+///
+/// * `#[serde(with = "arrayfire_serde")]`
+/// * `#[serde(serialize_with = "arrayfire_serde::serialize")]`
+///
+/// ```rust
+/// #[macro_use]
+/// extern crate serde_derive;
+/// extern crate serde;
+/// extern crate arrayfire;
+/// extern crate arrayfire_serde;
+///
+/// #[derive(Serialize)]
+/// struct MyStruct {
+///     #[serde(serialize_with = "arrayfire_serde::serialize")]
+///     tensor: arrayfire::Array,
+/// }
+/// # fn main() {}
+/// ```
 pub fn serialize<T, S>(value: &T, serializer: S) -> Result<S::Ok, S::Error>
 where
     for<'a> Ser<'a, T>: Serialize,
@@ -15,6 +65,25 @@ where
     Ser::new(value).serialize(serializer)
 }
 
+/// Exposed deserialization function used by the `serde` attributes:
+///
+/// * `#[serde(with = "arrayfire_serde")]`
+/// * `#[serde(serialize_with = "arrayfire_serde::deserialize")]`
+///
+/// ```rust
+/// #[macro_use]
+/// extern crate serde_derive;
+/// extern crate serde;
+/// extern crate arrayfire;
+/// extern crate arrayfire_serde;
+///
+/// #[derive(Deserialize)]
+/// struct MyStruct {
+///     #[serde(deserialize_with = "arrayfire_serde::deserialize")]
+///     tensor: arrayfire::Array,
+/// }
+/// # fn main() {}
+/// ```
 pub fn deserialize<'de, T, D>(deserializer: D) -> Result<T, D::Error>
 where
     De<T>: Deserialize<'de>,
@@ -23,6 +92,7 @@ where
     De::deserialize(deserializer).map(De::into_inner)
 }
 
+/// Wrapper tuple struct to provide `serde::Serialize` trait for arrayfire types.
 pub struct Ser<'a, T: 'a>(&'a T);
 
 impl<'a, T> Ser<'a, T>
@@ -34,6 +104,7 @@ where
     }
 }
 
+/// Wrapper tuple struct to provide `serde::Deserialize` trait for arrayfire types.
 pub struct De<T>(T);
 
 impl<'de, T> De<T>
@@ -45,7 +116,7 @@ where
     }
 }
 
-pub struct Serde<T>(pub T);
+struct Serde<T>(pub T);
 
 impl<T> Serialize for Serde<T>
 where
