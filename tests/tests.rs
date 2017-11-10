@@ -44,7 +44,7 @@ fn test_array() {
     let values: [f64; 4] = [1.0, 2.0, 3.0, 4.0];
     let array = Array::new::<f64>(&values, dim);
     let tokens = [
-        Token::Seq { len: Some(3) },
+        Token::Tuple { len: 3 },
         Token::U8(2),
         Token::Tuple { len: 4 },
         Token::U64(2),
@@ -58,7 +58,7 @@ fn test_array() {
         Token::F64(3.0),
         Token::F64(4.0),
         Token::SeqEnd,
-        Token::SeqEnd,
+        Token::TupleEnd,
     ];
     assert_ser_tokens(&Ser::new(&array), &tokens);
 

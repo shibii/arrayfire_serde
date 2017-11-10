@@ -4,7 +4,7 @@ extern crate serde;
 use arrayfire::{Array, DType, Dim4, HasAfEnum};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde::de::{SeqAccess, Visitor};
-use serde::ser::{SerializeSeq, SerializeTuple};
+use serde::ser::SerializeTuple;
 use std::fmt;
 
 pub fn serialize<T, S>(value: &T, serializer: S) -> Result<S::Ok, S::Error>
@@ -105,8 +105,6 @@ impl<'de> Deserialize<'de> for De<Dim4> {
             where
                 V: SeqAccess<'de>,
             {
-
-
                 let d0: u64 = visitor.next_element()?.expect("has element");
                 let d1: u64 = visitor.next_element()?.expect("has element");
                 let d2: u64 = visitor.next_element()?.expect("has element");
@@ -166,9 +164,9 @@ impl<'a> Serialize for Ser<'a, Array> {
         let dim = array.dims();
         let dtype: DType = array.get_type();
 
-        let mut seq = serializer.serialize_seq(Some(3))?;
-        seq.serialize_element(&Ser::new(&dtype))?;
-        seq.serialize_element(&Ser::new(&dim))?;
+        let mut tup = serializer.serialize_tuple(3)?;
+        tup.serialize_element(&Ser::new(&dtype))?;
+        tup.serialize_element(&Ser::new(&dim))?;
 
         fn get_data<T: HasAfEnum>(array: &Array) -> Vec<T> {
             let mut data: Vec<T> = Vec::with_capacity(array.elements());
@@ -180,19 +178,19 @@ impl<'a> Serialize for Ser<'a, Array> {
         }
 
         match dtype {
-            DType::F32 => seq.serialize_element(&get_data::<f32>(array))?,
-            DType::F64 => seq.serialize_element(&get_data::<f64>(array))?,
-            DType::S16 => seq.serialize_element(&get_data::<i16>(array))?,
-            DType::S32 => seq.serialize_element(&get_data::<i32>(array))?,
-            DType::S64 => seq.serialize_element(&get_data::<i64>(array))?,
-            DType::U16 => seq.serialize_element(&get_data::<u16>(array))?,
-            DType::U32 => seq.serialize_element(&get_data::<u32>(array))?,
-            DType::U64 => seq.serialize_element(&get_data::<u64>(array))?,
-            DType::B8 => seq.serialize_element(&get_data::<bool>(array))?,
+            DType::F32 => tup.serialize_element(&get_data::<f32>(array))?,
+            DType::F64 => tup.serialize_element(&get_data::<f64>(array))?,
+            DType::S16 => tup.serialize_element(&get_data::<i16>(array))?,
+            DType::S32 => tup.serialize_element(&get_data::<i32>(array))?,
+            DType::S64 => tup.serialize_element(&get_data::<i64>(array))?,
+            DType::U16 => tup.serialize_element(&get_data::<u16>(array))?,
+            DType::U32 => tup.serialize_element(&get_data::<u32>(array))?,
+            DType::U64 => tup.serialize_element(&get_data::<u64>(array))?,
+            DType::B8 => tup.serialize_element(&get_data::<bool>(array))?,
             _ => panic!("unimplemented serialization for complex types!"),
         }
 
-        seq.end()
+        tup.end()
     }
 }
 
