@@ -64,6 +64,7 @@ fn test_array() {
 
     let mut de = Deserializer::new(&tokens);
     let de_array = deserialize::<Array, _>(&mut de).unwrap();
+    assert_eq!(de.next_token_opt(), None);
     assert_eq!(array.get_type(), de_array.get_type());
     assert_eq!(array.dims(), de_array.dims());
 
