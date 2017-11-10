@@ -220,6 +220,14 @@ impl<'de> Deserialize<'de> for De<DType> {
                 let dtype: DType = unsafe { std::mem::transmute(i32::from(value)) };
                 Ok(De(dtype))
             }
+
+            fn visit_u64<E>(self, value: u64) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                let dtype: DType = unsafe { std::mem::transmute(value as i32) };
+                Ok(De(dtype))
+            }
         }
 
         deserializer.deserialize_u8(DTypeVisitor)
@@ -305,6 +313,6 @@ impl<'de> Deserialize<'de> for De<Array> {
                 }
             }
         }
-        deserializer.deserialize_seq(ArrayVisitor)
+        deserializer.deserialize_tuple(3, ArrayVisitor)
     }
 }
